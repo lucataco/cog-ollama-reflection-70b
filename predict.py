@@ -3,18 +3,13 @@ import json
 import time
 import requests
 import subprocess
-import logging
 from cog import BasePredictor, Input, ConcatenateIterator
-
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 MODEL_NAME = "reflection:70b"
 OLLAMA_API = "http://127.0.0.1:11434"
 OLLAMA_GENERATE = OLLAMA_API + "/api/generate"
 MODEL_CACHE = "checkpoints"
-MODEL_URL = "https://weights.replicate.delivery/default/ollama/reflection/70b.tar"
+MODEL_URL = "https://weights.replicate.delivery/default/ollama/reflection/ref_70_e3.tar"
 
 def download_weights(url, dest):
     start = time.time()
@@ -29,12 +24,12 @@ def wait_for_ollama(timeout=60):
         try:
             response = requests.get(OLLAMA_API)
             if response.status_code == 200:
-                logger.info("Ollama server is running")
+                print("Ollama server is running")
                 return True
         except requests.ConnectionError:
             pass
         time.sleep(1)
-    logger.error("Timeout waiting for Ollama server")
+    print("Timeout waiting for Ollama server")
     return False
 
 class Predictor(BasePredictor):
@@ -64,7 +59,7 @@ class Predictor(BasePredictor):
         prompt: str = Input(description="Input text for the model"),
         temperature: float = Input(description="Controls randomness. Lower values make the model more deterministic, higher values make it more random.", default=0.7, ge=0.0, le=1.0),
         top_p: float = Input(description="Controls diversity of the output. Lower values make the output more focused, higher values make it more diverse.", default=0.95, ge=0.0, le=1.0),
-        max_tokens: int = Input(description="Maximum number of tokens to generate", default=100, ge=1),
+        max_tokens: int = Input(description="Maximum number of tokens to generate", default=128, ge=1),
     ) -> ConcatenateIterator[str]:
         """Run a single prediction on the model and stream the output"""
         payload = {
